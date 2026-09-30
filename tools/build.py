@@ -187,7 +187,7 @@ def slide_html(entry, first, lazy, hotspots):
             scale = derived
         elif raw_width % DESIGN_WIDTH:
             notes.append("宽度 %d 不是 %d 的整数倍" % (raw_width, DESIGN_WIDTH))
-        height = max(2, round(round(raw_height / scale) / 2) * 2)
+        height = max(1, round(raw_height / scale))
         attrs += ['width="%d"' % DESIGN_WIDTH, 'height="%d"' % height]
     else:
         notes.append("读不出尺寸，请手动给这页加 data-h")
