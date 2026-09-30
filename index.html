@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>展示页 · 宽 1920</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body data-mode="page">
+    <div class="progress" id="progress"></div>
+    <div class="viewport" id="viewport">
+      <!-- data-fit="slide" 每页各自缩放到刚好完整可见；data-fit="uniform" 所有页统一缩放 -->
+      <div class="stage" id="stage" data-fit="slide">
+        <!-- BUILD:SLIDES -->
+        <section class="slide">
+          <img class="shot" src="assets/01.webp" width="1920" height="1080" fetchpriority="high" decoding="async" alt="" />
+        </section>
+        <section class="slide">
+          <img class="shot" src="assets/02.webp" width="1920" height="1080" loading="lazy" decoding="async" alt="" />
+        </section>
+        <section class="slide">
+          <img class="shot" src="assets/03.webp" width="1920" height="1080" loading="lazy" decoding="async" alt="" />
+        </section>
+        <section class="slide">
+          <img class="shot" src="assets/04.webp" width="1920" height="1080" loading="lazy" decoding="async" alt="" />
+        </section>
+        <section class="slide">
+          <img class="shot" src="assets/05.webp" width="1920" height="1604" loading="lazy" decoding="async" alt="" />
+        </section>
+        <section class="slide">
+          <img class="shot" src="assets/06.webp" width="1920" height="1080" loading="lazy" decoding="async" alt="" />
+        </section>
+        <section class="slide">
+          <img class="shot" src="assets/07.webp" width="1920" height="1398" loading="lazy" decoding="async" alt="" />
+        </section>
+        <section class="slide">
+          <img class="shot" src="assets/08.webp" width="1920" height="1080" loading="lazy" decoding="async" alt="" />
+        </section>
+        <section class="slide">
+          <img class="shot" src="assets/09.webp" width="1920" height="1808" loading="lazy" decoding="async" alt="" />
+        </section>
+        <section class="slide">
+          <img class="shot" src="assets/10.webp" width="1920" height="1080" loading="lazy" decoding="async" alt="" />
+        </section>
+        <section class="slide">
+          <img class="shot" src="assets/11.webp" width="1920" height="2770" loading="lazy" decoding="async" alt="" />
+        </section>
+        <!-- /BUILD:SLIDES -->
+      </div>
+    </div>
+
+    <div class="hud" id="hud">
+      <button class="hud-btn" data-act="prev" aria-label="上一页">‹</button>
+      <span class="counter"><b id="cur">1</b> / <span id="total">3</span></span>
+      <button class="hud-btn" data-act="next" aria-label="下一页">›</button>
+      <button class="hud-btn" data-act="mode" id="modeBtn">逐页预览</button>
+      <button class="hud-btn" data-act="print">导出 PDF</button>
+      <button class="hud-btn" data-act="fullscreen">全屏</button>
+    </div>
+
+    <div class="dots" id="dots"></div>
+    <div class="toast" id="toast"></div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
