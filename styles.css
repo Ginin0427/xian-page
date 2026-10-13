@@ -64,12 +64,24 @@ body {
   visibility: hidden;
   transition: opacity 0.32s var(--ease), transform 0.32s var(--ease);
   color: #10131a;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+
+.slide picture {
+  display: contents;
 }
 
 .slide.is-active {
   opacity: 1;
   visibility: visible;
   transform: translate(-50%, -50%);
+}
+
+/* 真实图片一到位就撤掉模糊占位图，省一份解码内存 */
+.slide.uses-shot {
+  background-image: none !important;
 }
 
 .slide.is-measuring {

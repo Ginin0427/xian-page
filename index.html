@@ -12,6 +12,9 @@
     <meta property="og:url" content="https://ginin0427.github.io/xian-page/" />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="stylesheet" href="styles.css" />
+    <!-- BUILD:PRELOAD -->
+      <link rel="preload" as="image" type="image/avif" imagesrcset="assets/01@1280w.avif 1280w, assets/01@1920w.avif 1920w, assets/01@2560w.avif 2560w, assets/01@3200w.avif 3200w, assets/01@3840w.avif 3840w" imagesizes="(max-width: 1920px) 100vw, 1920px" />
+      <!-- /BUILD:PRELOAD -->
   </head>
   <body data-mode="page">
     <div class="progress" id="progress"></div>
@@ -19,56 +22,124 @@
       <!-- data-fit="slide" 每页各自缩放到刚好完整可见；data-fit="uniform" 所有页统一缩放 -->
       <div class="stage" id="stage" data-fit="slide">
         <!-- BUILD:SLIDES -->
-        <section class="slide">
-          <img class="shot" src="assets/01.webp" width="1920" height="1080" fetchpriority="high" decoding="async" alt="" />
+        <section class="slide" style="background-image:url('data:image/webp;base64,UklGRnYAAABXRUJQVlA4IGoAAACwAwCdASoUAAsAPu1iqU2ppaOiMAgBMB2JZACdABj7GP2HCjdY4AD+79eUyu0VLyBtFx7sbiHEbcQV4cOq+vMgEV+/HRFALXFMYJC9g1N3Dc3D6IQZd3m6p/2TE6X9oPS6n1h7rQG8JgAA')">
+          <picture>
+            <source type="image/avif" srcset="assets/01@1280w.avif 1280w, assets/01@1920w.avif 1920w, assets/01@2560w.avif 2560w, assets/01@3200w.avif 3200w, assets/01@3840w.avif 3840w" sizes="(max-width: 1920px) 100vw, 1920px" />
+            <source type="image/webp" srcset="assets/01@1920w.webp 1920w" sizes="(max-width: 1920px) 100vw, 1920px" />
+            <img class="shot" src="assets/01@1920w.webp" width="1920" height="1080" fetchpriority="high" decoding="async" alt="" />
+          </picture>
         </section>
-        <section class="slide">
-          <img class="shot" src="assets/02.webp" width="1920" height="1080" loading="lazy" decoding="async" alt="" />
+        <section class="slide" style="background-image:url('data:image/webp;base64,UklGRjYAAABXRUJQVlA4ICoAAACwAgCdASoUAAsAPu1iqU2ppaQiMAgBMB2JaQAAeyAA/vDQh0JYRxylwAA=')">
+          <picture>
+            <source type="image/avif" srcset="assets/02@1280w.avif 1280w, assets/02@1920w.avif 1920w, assets/02@2560w.avif 2560w, assets/02@3200w.avif 3200w, assets/02@3840w.avif 3840w" sizes="(max-width: 1920px) 100vw, 1920px" />
+            <source type="image/webp" srcset="assets/02@1920w.webp 1920w" sizes="(max-width: 1920px) 100vw, 1920px" />
+            <img class="shot" src="assets/02@1920w.webp" width="1920" height="1080" loading="lazy" decoding="async" alt="" />
+          </picture>
         </section>
-        <section class="slide">
-          <img class="shot" src="assets/03.webp" width="1920" height="1239" loading="lazy" decoding="async" alt="" />
+        <section class="slide" style="background-image:url('data:image/webp;base64,UklGRjgAAABXRUJQVlA4ICwAAACwAgCdASoUAA0APu1iqU2ppaQiMAgBMB2JaQAAeyAA/vC9Z9Fv+GzFMYYAAA==')">
+          <picture>
+            <source type="image/avif" srcset="assets/03@1280w.avif 1280w, assets/03@1920w.avif 1920w, assets/03@2560w.avif 2560w, assets/03@3200w.avif 3200w, assets/03@3840w.avif 3840w" sizes="(max-width: 1920px) 100vw, 1920px" />
+            <source type="image/webp" srcset="assets/03@1920w.webp 1920w" sizes="(max-width: 1920px) 100vw, 1920px" />
+            <img class="shot" src="assets/03@1920w.webp" width="1920" height="1239" loading="lazy" decoding="async" alt="" />
+          </picture>
         </section>
-        <section class="slide">
-          <img class="shot" src="assets/04.webp" width="1920" height="1080" loading="lazy" decoding="async" alt="" />
+        <section class="slide" style="background-image:url('data:image/webp;base64,UklGRjwAAABXRUJQVlA4IDAAAAAQAwCdASoUAAsAPu1iqU2ppaOiMAgBMB2JaQAAW37EoAAA/vN9x1XC6168KEAAAAA=')">
+          <picture>
+            <source type="image/avif" srcset="assets/04@1280w.avif 1280w, assets/04@1920w.avif 1920w, assets/04@2560w.avif 2560w, assets/04@3200w.avif 3200w, assets/04@3840w.avif 3840w" sizes="(max-width: 1920px) 100vw, 1920px" />
+            <source type="image/webp" srcset="assets/04@1920w.webp 1920w" sizes="(max-width: 1920px) 100vw, 1920px" />
+            <img class="shot" src="assets/04@1920w.webp" width="1920" height="1080" loading="lazy" decoding="async" alt="" />
+          </picture>
         </section>
-        <section class="slide">
-          <img class="shot" src="assets/05.webp" width="1920" height="2019" loading="lazy" decoding="async" alt="" />
+        <section class="slide" style="background-image:url('data:image/webp;base64,UklGRnIAAABXRUJQVlA4IGYAAACQAwCdASoUABUAPu1srVEppaQiqAqpMB2JZwAAL4dMqtyNNNDgAP7tlsC26SVnJYJH7DCaBKxs3r58YBuVgRDkrVFUMZr+T6D/p8kXH8Avd7pVc3vQVYBEMrA6g+d4XHQJHwAAAAA=')">
+          <picture>
+            <source type="image/avif" srcset="assets/05@1280w.avif 1280w, assets/05@1920w.avif 1920w, assets/05@2560w.avif 2560w, assets/05@3200w.avif 3200w, assets/05@3840w.avif 3840w" sizes="(max-width: 1920px) 100vw, 1920px" />
+            <source type="image/webp" srcset="assets/05@1920w.webp 1920w" sizes="(max-width: 1920px) 100vw, 1920px" />
+            <img class="shot" src="assets/05@1920w.webp" width="1920" height="2019" loading="lazy" decoding="async" alt="" />
+          </picture>
         </section>
-        <section class="slide">
-          <img class="shot" src="assets/06.webp" width="1920" height="1080" loading="lazy" decoding="async" alt="" />
+        <section class="slide" style="background-image:url('data:image/webp;base64,UklGRkgAAABXRUJQVlA4IDwAAADwAgCdASoUAAsAPu1iqU2ppaOiMAgBMB2JaQAAetCIAAD+8KxQehGej3DUYIWGz5aId9n/fJ+mmXX4kAA=')">
+          <picture>
+            <source type="image/avif" srcset="assets/06@1280w.avif 1280w, assets/06@1920w.avif 1920w, assets/06@2560w.avif 2560w, assets/06@3200w.avif 3200w, assets/06@3840w.avif 3840w" sizes="(max-width: 1920px) 100vw, 1920px" />
+            <source type="image/webp" srcset="assets/06@1920w.webp 1920w" sizes="(max-width: 1920px) 100vw, 1920px" />
+            <img class="shot" src="assets/06@1920w.webp" width="1920" height="1080" loading="lazy" decoding="async" alt="" />
+          </picture>
         </section>
-        <section class="slide">
-          <img class="shot" src="assets/07.webp" width="1920" height="2992" loading="lazy" decoding="async" alt="" />
+        <section class="slide" style="background-image:url('data:image/webp;base64,UklGRoIAAABXRUJQVlA4IHYAAACwAwCdASoUAB8APuFUpU2opCOiN/qoARAcCWdotgA3uJ/48fiKAAD+8OLfiot88NXAZCPklfBH/IrblgT9ct0kIavAM29ldGJoZeN5/+enylJJIAbLreKRQEvp1VIVd0h8DmhOsYUZq5iAhulSFUALJABqAAAA')">
+          <picture>
+            <source type="image/avif" srcset="assets/07@1280w.avif 1280w, assets/07@1920w.avif 1920w, assets/07@2560w.avif 2560w, assets/07@3200w.avif 3200w, assets/07@3840w.avif 3840w" sizes="(max-width: 1920px) 100vw, 1920px" />
+            <source type="image/webp" srcset="assets/07@1920w.webp 1920w" sizes="(max-width: 1920px) 100vw, 1920px" />
+            <img class="shot" src="assets/07@1920w.webp" width="1920" height="2992" loading="lazy" decoding="async" alt="" />
+          </picture>
         </section>
-        <section class="slide">
-          <img class="shot" src="assets/08.webp" width="1920" height="2126" loading="lazy" decoding="async" alt="" />
+        <section class="slide" style="background-image:url('data:image/webp;base64,UklGRpQAAABXRUJQVlA4IIgAAABQBACdASoUABYAPu1mq08ppaOiKA1RMB2JZQDM0BDejzPz8wzwFj4QJ53wAP7x9N35KK9yIJYVS4dtweB7d8cVbnydc3gYd7fxet3YUbrLREMyh4EYtJvoreHq0gpClcYc2iHt9ul3Zdgs41CyM5Acr+20DuZkJ0ZTHwpvOn60O1rc/CKT0QAA')">
+          <picture>
+            <source type="image/avif" srcset="assets/08@1280w.avif 1280w, assets/08@1920w.avif 1920w, assets/08@2560w.avif 2560w, assets/08@3200w.avif 3200w, assets/08@3840w.avif 3840w" sizes="(max-width: 1920px) 100vw, 1920px" />
+            <source type="image/webp" srcset="assets/08@1920w.webp 1920w" sizes="(max-width: 1920px) 100vw, 1920px" />
+            <img class="shot" src="assets/08@1920w.webp" width="1920" height="2126" loading="lazy" decoding="async" alt="" />
+          </picture>
         </section>
-        <section class="slide">
-          <img class="shot" src="assets/09.webp" width="1920" height="2112" loading="lazy" decoding="async" alt="" />
+        <section class="slide" style="background-image:url('data:image/webp;base64,UklGRoYAAABXRUJQVlA4IHoAAAAQBACdASoUABYAPu1ip02ppaOiMAgBMB2JZwAAW+iznQjX7B5m2N1VAAD+8crEDLodl/W2wxJ5uOKdXOzIxMzhCvTdtqTRIonV0dgPJCdxpzNJNLc0QimuO53kCowgx3eUZkUT81LRxz1vPRdTI4Le6oM+BFpQwIAAAA==')">
+          <picture>
+            <source type="image/avif" srcset="assets/09@1280w.avif 1280w, assets/09@1920w.avif 1920w, assets/09@2560w.avif 2560w, assets/09@3200w.avif 3200w, assets/09@3840w.avif 3840w" sizes="(max-width: 1920px) 100vw, 1920px" />
+            <source type="image/webp" srcset="assets/09@1920w.webp 1920w" sizes="(max-width: 1920px) 100vw, 1920px" />
+            <img class="shot" src="assets/09@1920w.webp" width="1920" height="2112" loading="lazy" decoding="async" alt="" />
+          </picture>
         </section>
-        <section class="slide">
-          <img class="shot" src="assets/10.webp" width="1920" height="1458" loading="lazy" decoding="async" alt="" />
+        <section class="slide" style="background-image:url('data:image/webp;base64,UklGRnAAAABXRUJQVlA4IGQAAADQAwCdASoUAA8APu1iqU2ppaOiMAgBMB2JYwDImCKV+94jiC7MUsAA/u2fB/jpT1JT4aLxUDpfIy6nGFOQeSv5Y69aXSGhrKgzI+O6PmxdcdWB31taFz6d1xuPNPjACe2FqAAA')">
+          <picture>
+            <source type="image/avif" srcset="assets/10@1280w.avif 1280w, assets/10@1920w.avif 1920w, assets/10@2560w.avif 2560w, assets/10@3200w.avif 3200w, assets/10@3840w.avif 3840w" sizes="(max-width: 1920px) 100vw, 1920px" />
+            <source type="image/webp" srcset="assets/10@1920w.webp 1920w" sizes="(max-width: 1920px) 100vw, 1920px" />
+            <img class="shot" src="assets/10@1920w.webp" width="1920" height="1458" loading="lazy" decoding="async" alt="" />
+          </picture>
         </section>
-        <section class="slide">
-          <img class="shot" src="assets/11.webp" width="1920" height="1478" loading="lazy" decoding="async" alt="" />
+        <section class="slide" style="background-image:url('data:image/webp;base64,UklGRlIAAABXRUJQVlA4IEYAAABQAwCdASoUAA8APu1iqU2ppaOiMAgBMB2JZwAAW4HAKw5wQAD+83Unrvtco7GceBPIXUz93GahA37HT4XFfGemzxuQAAAA')">
+          <picture>
+            <source type="image/avif" srcset="assets/11@1280w.avif 1280w, assets/11@1920w.avif 1920w, assets/11@2560w.avif 2560w, assets/11@3200w.avif 3200w, assets/11@3840w.avif 3840w" sizes="(max-width: 1920px) 100vw, 1920px" />
+            <source type="image/webp" srcset="assets/11@1920w.webp 1920w" sizes="(max-width: 1920px) 100vw, 1920px" />
+            <img class="shot" src="assets/11@1920w.webp" width="1920" height="1478" loading="lazy" decoding="async" alt="" />
+          </picture>
         </section>
-        <section class="slide">
-          <img class="shot" src="assets/12.webp" width="1920" height="1926" loading="lazy" decoding="async" alt="" />
+        <section class="slide" style="background-image:url('data:image/webp;base64,UklGRoAAAABXRUJQVlA4IHQAAADwAwCdASoUABQAPu1urlKppiQiqAgBMB2JZw24QAE4BgzdcUbOJQAAAP7xz0n5sGZuN6nv1tt5CBGsmCg8M/QK4r3doY7a/WDynTMrz2cqdW8mycjfmrJ194iyRRuFGzvPxqL8AP33uzGLZhv/iFOh+nFAAA==')">
+          <picture>
+            <source type="image/avif" srcset="assets/12@1280w.avif 1280w, assets/12@1920w.avif 1920w, assets/12@2560w.avif 2560w, assets/12@3200w.avif 3200w, assets/12@3840w.avif 3840w" sizes="(max-width: 1920px) 100vw, 1920px" />
+            <source type="image/webp" srcset="assets/12@1920w.webp 1920w" sizes="(max-width: 1920px) 100vw, 1920px" />
+            <img class="shot" src="assets/12@1920w.webp" width="1920" height="1926" loading="lazy" decoding="async" alt="" />
+          </picture>
         </section>
-        <section class="slide">
-          <img class="shot" src="assets/13.webp" width="1920" height="3401" loading="lazy" decoding="async" alt="" />
+        <section class="slide" style="background-image:url('data:image/webp;base64,UklGRpIAAABXRUJQVlA4IIYAAACwBQCdASoUACMAPu1sq1EppaOiqrgKATAdiWMAzGn8ABQ2EHBtN7yEQLDwKKXX0osVkZhpYAAA/vN0/MKofo3sGPBLOWkZbn3HjKgGWLJtAF6m8EszItkDkHyKteGyERj0vwOO69KHRwgg+zhGb503WjALZGm6PBMroqB2g3kOXLmbjYAAAA==')">
+          <picture>
+            <source type="image/avif" srcset="assets/13@1280w.avif 1280w, assets/13@1920w.avif 1920w, assets/13@2560w.avif 2560w, assets/13@3200w.avif 3200w, assets/13@3840w.avif 3840w" sizes="(max-width: 1920px) 100vw, 1920px" />
+            <source type="image/webp" srcset="assets/13@1920w.webp 1920w" sizes="(max-width: 1920px) 100vw, 1920px" />
+            <img class="shot" src="assets/13@1920w.webp" width="1920" height="3401" loading="lazy" decoding="async" alt="" />
+          </picture>
         </section>
-        <section class="slide">
-          <img class="shot" src="assets/14.webp" width="1920" height="2226" loading="lazy" decoding="async" alt="" />
+        <section class="slide" style="background-image:url('data:image/webp;base64,UklGRmQAAABXRUJQVlA4IFgAAADQAwCdASoUABcAPu1wsFIppiSiqAgBMB2JZwAAKdVg+/RQIDNS1sAA/usxtByQwJjCgpusgWH/xDfTzdWi88zjO0JmDXZNFpOCH2ptAbxDPbfxzmgAAAAA')">
+          <picture>
+            <source type="image/avif" srcset="assets/14@1280w.avif 1280w, assets/14@1920w.avif 1920w, assets/14@2560w.avif 2560w, assets/14@3200w.avif 3200w, assets/14@3840w.avif 3840w" sizes="(max-width: 1920px) 100vw, 1920px" />
+            <source type="image/webp" srcset="assets/14@1920w.webp 1920w" sizes="(max-width: 1920px) 100vw, 1920px" />
+            <img class="shot" src="assets/14@1920w.webp" width="1920" height="2226" loading="lazy" decoding="async" alt="" />
+          </picture>
         </section>
-        <section class="slide">
-          <img class="shot" src="assets/15.webp" width="1920" height="1080" loading="lazy" decoding="async" alt="" />
+        <section class="slide" style="background-image:url('data:image/webp;base64,UklGRlYAAABXRUJQVlA4IEoAAADQAwCdASoUAAsAPu1iqk4ppaQiMAgBMB2JQAXf+A8j3zs/nff0JlwA/urw0rbIofdB1/C5n/nnAIZphndrY0iW/aIe8GJxlQUAAA==')">
+          <picture>
+            <source type="image/avif" srcset="assets/15@1280w.avif 1280w, assets/15@1920w.avif 1920w, assets/15@2560w.avif 2560w, assets/15@3200w.avif 3200w, assets/15@3840w.avif 3840w" sizes="(max-width: 1920px) 100vw, 1920px" />
+            <source type="image/webp" srcset="assets/15@1920w.webp 1920w" sizes="(max-width: 1920px) 100vw, 1920px" />
+            <img class="shot" src="assets/15@1920w.webp" width="1920" height="1080" loading="lazy" decoding="async" alt="" />
+          </picture>
         </section>
-        <section class="slide">
-          <img class="shot" src="assets/16.webp" width="1920" height="4110" loading="lazy" decoding="async" alt="" />
+        <section class="slide" style="background-image:url('data:image/webp;base64,UklGRpAAAABXRUJQVlA4IIQAAACQBACdASoUACsAPu1sqE6ppqOjMBqoATAdiWdo2QAkw7rPWg/TlQIK5CeG47AA/vB8j8qdAFwYQpU+887lKdnatB00C4zJ56rzuv7up845pBq7KhNm3EGQu68rU4Xxw09Cw5wv6WDKjm0FLuHrPfUbO9n8U7NeO8K25YeYgCy5/RQAAAA=')">
+          <picture>
+            <source type="image/avif" srcset="assets/16@1280w.avif 1280w, assets/16@1920w.avif 1920w, assets/16@2560w.avif 2560w, assets/16@3200w.avif 3200w, assets/16@3840w.avif 3840w" sizes="(max-width: 1920px) 100vw, 1920px" />
+            <source type="image/webp" srcset="assets/16@1920w.webp 1920w" sizes="(max-width: 1920px) 100vw, 1920px" />
+            <img class="shot" src="assets/16@1920w.webp" width="1920" height="4110" loading="lazy" decoding="async" alt="" />
+          </picture>
         </section>
-        <section class="slide">
-          <img class="shot" src="assets/17.webp" width="1920" height="2022" loading="lazy" decoding="async" alt="" />
+        <section class="slide" style="background-image:url('data:image/webp;base64,UklGRkAAAABXRUJQVlA4IDQAAAAQAwCdASoUABUAPu1ur1KppiQiqAgBMB2JaQAAPZX9WgAA/vC+/HVVgGTbyy5m4RwbIAAA')">
+          <picture>
+            <source type="image/avif" srcset="assets/17@1280w.avif 1280w, assets/17@1920w.avif 1920w, assets/17@2560w.avif 2560w, assets/17@3200w.avif 3200w, assets/17@3840w.avif 3840w" sizes="(max-width: 1920px) 100vw, 1920px" />
+            <source type="image/webp" srcset="assets/17@1920w.webp 1920w" sizes="(max-width: 1920px) 100vw, 1920px" />
+            <img class="shot" src="assets/17@1920w.webp" width="1920" height="2022" loading="lazy" decoding="async" alt="" />
+          </picture>
         </section>
         <!-- /BUILD:SLIDES -->
       </div>

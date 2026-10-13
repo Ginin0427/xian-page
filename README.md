@@ -48,8 +48,10 @@ outputs/
   index.html        ← 页面骨架 + HUD，切图内容由脚本写入
   styles.css        ← 舞台、缩放、进度条、章节点
   app.js            ← 量高 + 缩放 + 连续滚动/逐页预览/全屏/打印
-  tools/build.py    ← 扫描 assets/ 自动生成每一页
-  assets/           ← 放导出的切图
+  tools/build.py    ← 扫描 assets/，生成 <picture> + srcset，写入每一页
+  tools/optimize.py ← PNG → 分级 AVIF/WebP，顺带生成模糊占位图
+  assets/           ← 导出的切图，优化后是 NN@1280w.avif 这一套
+  assets/lqip/      ← 20px 模糊占位图，构建时内联进 index.html
   hotspots.json     ← 可选，给切图加可点区域
 ```
 
@@ -73,7 +75,8 @@ python3 -m http.server 8000
 
 - 只用小写英文、数字、`-`，不要空格、中文和其他符号。
 - 只导 2x。1920 导成 3840 宽，Retina 屏才清晰；浏览器会自动降采样，不用再单独导 1x。
-- 默认 PNG；图多体积大时可以改 WebP（Figma 支持导出），通常能小一半以上。需要透明通道时用 PNG/WebP，不要 JPG。
+- 导出用 **PNG**（或 Figma 的 WebP）都行，`tools/optimize.py` 会统一转成分级 AVIF，不用自己压。
+- 只给纯色块的话 PNG 本来就小；照片、渐变、插画 PNG 会很大，那也没关系，转档时会被压下来。
 - 每张图宽度必须是 1920 的整数倍，不要手动裁掉左右边。
 - 页与页之间的留白留在图里，不要靠 `margin` 补，否则会和其他页对不齐。
 
@@ -85,15 +88,18 @@ python3 -m http.server 8000
 
 设计稿 1920 宽 → 导出 3840 宽就够了。文件体积随倍率平方增长，3x 是 2x 的 2.25 倍大，但肉眼在正常屏幕上是看不出差别的。
 
-**2. 格式优先 WebP，质量 82–88**
+**2. 格式用 AVIF，WebP 兜底**
 
-| 格式 | 相对 PNG | 适用 |
+| 格式 | 同画质相对 WebP | 适用 |
 | --- | --- | --- |
-| WebP（有损 q85） | 小 60–80% | 默认选择。渐变、插画、照片都合适 |
-| PNG | 基准 | 需要无损、或字边缘被有损压出毛边时 |
-| JPG | 小 30–50% | 照片类，不支持透明 |
+| AVIF（q68） | 小 40–60%，边缘反而更锐 | 默认。浏览器支持率已 97%+ |
+| WebP（q86） | 基准 | 老浏览器兜底，`<picture>` 自动降级 |
+| PNG | 大 4–10 倍 | 只在需要无损时用 |
 
-Figma 可以直接导 WebP。判断标准很简单：导出后在 100% 缩放看一眼文字和细线边缘，没有毛边就用 WebP。
+实测（同一张图、同一分辨率）：AVIF q68 是 59 KB，文字边缘 48.0 dB；WebP q90 是 144 KB，边缘 47.3 dB。
+**体积只有 41%，字还更锐**。所以不用在「清晰」和「快」之间取舍。
+
+`tools/optimize.py` 会把 PNG 一次性转好，默认 `--avif-q 68 --webp-q 86`。
 
 **3. 页面必须切开，不要一张两万像素的长图**
 
@@ -105,48 +111,75 @@ Figma 可以直接导 WebP。判断标准很简单：导出后在 100% 缩放看
 
 `build.py` 已经做了：第一页 `fetchpriority="high"`，后面的 `loading="lazy"`。
 
-**5. 手机也要快的话，导两套图**
+**5. 一份源图出五档，浏览器自己挑**
 
-只导 2x 时，手机（屏宽 390 左右）会下载 3840 宽的大图，属于过量。把 `01-hero@1x.webp` 和 `01-hero@2x.webp` 一起放进 `assets/`，脚本会自动合并成一页并生成 `srcset`，浏览器按屏幕自己挑：
+只导 2x 时，手机（屏宽 390）会下载 3840 宽的图，属于过量；反过来笔记本盯 3840 也是浪费。
+`optimize.py` 会把每张图导出 1280 / 1920 / 2560 / 3200 / 3840 五档 AVIF，页面用 `<picture>` 让浏览器按「窗口宽度 × 像素密度」选最省的那一档：
 
 ```html
-<img src="assets/01-hero@2x.webp" srcset="assets/01-hero@1x.webp 1920w, assets/01-hero@2x.webp 3840w"
-     sizes="(max-width: 1920px) 100vw, 1920px" width="1920" height="2400" ... />
+<picture>
+  <source type="image/avif" srcset="assets/01@1280w.avif 1280w, … assets/01@3840w.avif 3840w"
+          sizes="(max-width: 1920px) 100vw, 1920px" />
+  <source type="image/webp" srcset="assets/01@1920w.webp 1920w" sizes="…" />
+  <img class="shot" src="assets/01@1920w.webp" width="1920" height="1080" … />
+</picture>
 ```
 
-只给桌面看的话，这步可以跳过。
+`sizes` 是绝对宽度，所以不管页面怎么缩放，选档都是确定的：
 
-**6. 每次 build 会报体积**
+| 设备 | 需要的宽 | 实际下载 | 首屏 | 整本 17 页 |
+| --- | --- | --- | --- | --- |
+| iPhone 15 | 1179 | 1280 | 23 KB | 1.1 MB |
+| iPad Pro 11 | 1668 | 1920 | 34 KB | 1.9 MB |
+| 1080p 外接屏 | 1920 | 1920 | 34 KB | 1.9 MB |
+| MacBook 13/14" | 2880–3024 | 3200 | 59 KB | 3.5 MB |
+| 4K / 5K 屏 | 3840 | 3840 | 76 KB | 4.1 MB |
+
+**6. 加载位先用模糊占位图顶上**
+
+`assets/lqip/*.webp` 是 20px 宽的缩略图，构建时以内联 base64 写进每一页的 `background-image`。
+慢网下滑动时看到的是糊掉的本页预览，而不是一片白，等真图下载完再无缝盖上去。
+17 页加起来只占 index.html 约 5 KB。
+
+**7. 每次 build 会报体积**
 
 ```
-01-hero@2x.webp  高  1200   680 KB
-02-features@2x.webp  高   900   420 KB
+01     高  1080  最高档  3840px    76 KB
+02     高  1080  最高档  3840px    56 KB
 
-共 2 页，合计 1.1 MB，已写入 index.html
+共 17 页，最高档合计 4.1 MB，已写入 index.html
 ```
 
-单张超过 1.5MB、或整站超过 15MB 会给出提醒。
+单张最高档超过 600 KB、或最高档合计超过 8 MB 会给出提醒。
 
 ## 一键生成页面
 
-图按规则放进 `assets/` 后，不用手写 HTML：
+图按规则放进 `assets/` 后，一条命令跑完「转档 + 生成页面」：
 
 ```bash
 cd outputs
-python3 tools/build.py
+python3 tools/optimize.py
 ```
 
-脚本扫描 `assets/`，按文件名自然排序，读出每张图真实尺寸（自动识别 1x / 2x），重写 `index.html` 里 `BUILD:SLIDES` 标记之间的内容：
+`optimize.py` 做四件事：
+
+1. 把每张 PNG 转成 1280/1920/2560/3200/3840 五档 AVIF，外加 1920 宽的 WebP 兜底；
+2. 顺手生成 20px 的模糊占位图 `assets/lqip/`；
+3. 原图移到 `../png-originals/<时间戳>/` 留档，仓库里只留压好的图；
+4. 调 `build.py` 重写 `index.html`。
+
+只改了 CSS/文案、图片没动时，可以只跑 `python3 tools/build.py`。它扫描 `assets/`，按文件名自然排序，读出每张图真实尺寸（不看文件名后缀，改名也不会算错高度）：
 
 ```
-01-hero@2x.png      高  1200
-02-features@2x.png  高   900
-10-footer@2x.png    高   900
+01     高  1080  最高档  3840px    76 KB
+02     高  1080  最高档  3840px    56 KB
 
-共 3 页，已写入 index.html
+共 17 页，最高档合计 4.1 MB，已写入 index.html
 ```
 
 加 `--eager` 可以关掉懒加载。
+
+可调参数：`--avif-q 72`、`--webp-q 90`、`--keep`（转换后把原图留在 `assets/`）。
 
 ### 顺手埋热点
 
@@ -154,7 +187,7 @@ python3 tools/build.py
 
 ```json
 {
-  "01-hero@2x.png": [
+  "01": [
     { "href": "/register", "x": 120, "y": 900, "w": 300, "h": 88 }
   ]
 }

@@ -12,17 +12,19 @@
 | 分支 | `main` |
 | Pages 来源 | `main` 分支根目录 |
 | 本机 git 身份 | Ginin0427 `<Ginin0427@users.noreply.github.com>` |
-| 网站体积 | 约 3.1 MB |
+| 网站体积 | 最高档合计 4.1 MB（浏览器按屏幕只下载其中一档） |
 
 ## 更新页面（以后每次改图都走这个流程）
 
 ```bash
 cd /Users/chenyangzi/Documents/Codex/2026-09-30/xian/outputs
-python3 tools/build.py     # 重新扫描 assets/ 生成 index.html
+python3 tools/optimize.py  # 把 assets/ 里的 PNG 转成分级 AVIF，并重建 index.html
 git add -A
 git commit -m "更新切图"
 git push
 ```
+
+只改了样式或文案、没换图时，把第一步换成 `python3 tools/build.py`。
 
 推送后 GitHub 会自动重新构建，1–2 分钟生效。地址不变。
 

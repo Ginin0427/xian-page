@@ -1,11 +1,19 @@
 #!/usr/bin/env python3
 """扫描 assets/，按文件名顺序生成 index.html 里的 <section class="slide">。
 
+每个 base（例 01）下的所有文件会合成一张 <picture>：
+    <source type="image/avif">  01@1280w.avif … 01@3840w.avif
+    <source type="image/webp">  01@1920w.webp（老浏览器兜底）
+    <img>                       兜底 src + width/height（防跳版）
+
+尺寸由文件里真实像素宽决定，不看文件名后缀，改名也不会算错高度。
+
 用法：
-    python3 tools/build.py            首屏预加载，其余懒加载
-    python3 tools/build.py --eager    全部预加载
+    python3 tools/build.py            首个 <picture> 写进 <head> 预加载
+    python3 tools/build.py --eager    全部图片都不懒加载
 """
 
+import base64
 import json
 import os
 import re
@@ -14,15 +22,29 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ASSETS = os.path.join(ROOT, "assets")
+LQIP_DIR = os.path.join(ASSETS, "lqip")
 TARGET = os.path.join(ROOT, "index.html")
 HOTSPOTS = os.path.join(ROOT, "hotspots.json")
 DESIGN_WIDTH = 1920
-EXTS = (".webp", ".avif", ".png", ".jpg", ".jpeg", ".svg")
+EXTS = (".avif", ".webp", ".png", ".jpg", ".jpeg", ".svg")
 BEGIN = "<!-- BUILD:SLIDES -->"
 END = "<!-- /BUILD:SLIDES -->"
+PRELOAD_BEGIN = "<!-- BUILD:PRELOAD -->"
+PRELOAD_END = "<!-- /BUILD:PRELOAD -->"
 
-WARN_SLIDE_BYTES = 1500000
-WARN_TOTAL_BYTES = 15000000
+MIME = {
+    ".avif": "image/avif",
+    ".webp": "image/webp",
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".svg": "image/svg+xml",
+}
+FORMATS = (".avif", ".webp", ".png", ".jpg", ".jpeg", ".svg")
+SIZES_ATTR = "(max-width: %dpx) 100vw, %dpx" % (DESIGN_WIDTH, DESIGN_WIDTH)
+
+WARN_SLIDE_BYTES = 600000
+WARN_TOTAL_BYTES = 8000000
 WARN_HEIGHT = 6000
 
 
@@ -64,10 +86,8 @@ def webp_size(data):
             int.from_bytes(data[27:30], "little") + 1,
         )
     if kind == b"VP8 ":
-        return (
-            int.from_bytes(data[26:28], "little") & 0x3FFF,
-            int.from_bytes(data[28:30], "little") & 0x3FFF,
-        )
+        width, height = struct.unpack("<HH", data[26:30])
+        return width & 0x3FFF, height & 0x3FFF
     if kind == b"VP8L":
         bits = int.from_bytes(data[21:25], "little")
         return (bits & 0x3FFF) + 1, ((bits >> 14) & 0x3FFF) + 1
@@ -75,7 +95,7 @@ def webp_size(data):
 
 
 def svg_size(text):
-    box = re.search(r'viewBox="([-\d.\s,]+)"', text)
+    box = re.search(r'viewBox="([^"]+)"', text)
     if box:
         parts = [float(v) for v in re.split(r"[\s,]+", box.group(1).strip()) if v]
         if len(parts) == 4:
@@ -87,38 +107,44 @@ def svg_size(text):
     return None
 
 
+def pil_size(path):
+    """AVIF 没有纯标准库解析，交给 Pillow 读文件头（不解码像素）。"""
+    try:
+        from PIL import Image
+    except ImportError:
+        return None
+    try:
+        with Image.open(path) as handle:
+            return handle.size
+    except Exception:
+        return None
+
+
 def image_info(path):
     with open(path, "rb") as handle:
         head = handle.read(4096)
     ext = os.path.splitext(path)[1].lower()
-    by_ext = {
+    readers = {
         ".png": png_size,
         ".jpg": jpeg_size,
         ".jpeg": jpeg_size,
         ".webp": webp_size,
         ".svg": lambda data: svg_size(data.decode("utf-8", "ignore")),
-        ".avif": None,
     }
-    order = [by_ext.get(ext)] if by_ext.get(ext) else []
-    order += [png_size, jpeg_size, webp_size]
     size = None
-    for reader in order:
+    for reader in [readers.get(ext), png_size, jpeg_size, webp_size]:
+        if not reader:
+            continue
         size = reader(head)
         if size:
             break
+    if not size:
+        size = pil_size(path)
     return size, os.path.getsize(path)
 
 
 def natural_key(text):
     return [int(part) if part.isdigit() else part.lower() for part in re.split(r"(\d+)", text)]
-
-
-def split_name(name):
-    stem, ext = os.path.splitext(name)
-    match = re.match(r"^(.*)@(\d)x$", stem)
-    if match:
-        return match.group(1), ext.lower(), int(match.group(2)), True
-    return stem, ext.lower(), 1, False
 
 
 def collect():
@@ -134,73 +160,76 @@ def collect():
 
     groups = {}
     for name in names:
-        base, ext, scale, explicit = split_name(name)
-        group = groups.setdefault(base.lower(), {"base": base, "files": {}, "named": {}})
-        group["files"].setdefault(ext, {})[scale] = name
-        group["named"][(ext, scale)] = explicit
+        stem, ext = os.path.splitext(name)
+        base = stem.split("@")[0]
+        size, _ = image_info(os.path.join(ASSETS, name))
+        if not size:
+            print("跳过（读不出宽高）：%s" % name)
+            continue
+        group = groups.setdefault(base.lower(), {"base": base, "ladders": {}})
+        group["ladders"].setdefault(ext.lower(), {})[size[0]] = name
 
     entries = []
     for group in groups.values():
-        for ext in EXTS:
-            scales = group["files"].get(ext)
-            if not scales:
-                continue
-            src_scale = max(scales)
-            entries.append(
-                {
-                    "src": scales[src_scale],
-                    "base": group["base"],
-                    "ext": ext,
-                    "scale": src_scale,
-                    "explicit": group["named"].get((ext, src_scale), False),
-                    "variants": scales,
-                }
-            )
-            break
+        ordered = [
+            (ext, group["ladders"][ext]) for ext in FORMATS if ext in group["ladders"]
+        ]
+        if not ordered:
+            continue
+        entries.append({"base": group["base"], "ladders": ordered})
     entries.sort(key=lambda entry: natural_key(entry["base"]))
     return entries
 
 
+def ladder_srcset(ladder):
+    return ", ".join("assets/%s %dw" % (ladder[width], width) for width in sorted(ladder))
+
+
 def hotspots_for(entry, hotspots):
-    for key in (entry["src"], entry["base"] + entry["ext"], entry["base"]):
+    top = entry["ladders"][0][1]
+    for key in (top[max(top)], entry["base"] + ".webp", entry["base"]):
         if key in hotspots:
             return hotspots[key]
     return []
 
 
+def lqip_data(base):
+    path = os.path.join(LQIP_DIR, base + ".webp")
+    if not os.path.isfile(path):
+        return None
+    with open(path, "rb") as handle:
+        return "data:image/webp;base64," + base64.b64encode(handle.read()).decode("ascii")
+
+
 def slide_html(entry, first, lazy, hotspots):
-    path = os.path.join(ASSETS, entry["src"])
-    size, bytes_ = image_info(path)
-    src = "assets/" + entry["src"]
-    attrs = ['class="shot"', 'src="' + src + '"']
+    top_ext, top_ladder = entry["ladders"][0]
+    top_width = max(top_ladder)
+    size, bytes_ = image_info(os.path.join(ASSETS, top_ladder[top_width]))
+    raw_width, raw_height = size
+    height = max(1, round(raw_height * DESIGN_WIDTH / raw_width))
     notes = []
-    height = 0
+    if raw_width < DESIGN_WIDTH:
+        notes.append("宽度只有 %dpx，放大到 1920 会糊，建议重新导出 2x" % raw_width)
 
-    if size:
-        raw_width, raw_height = size
-        scale = entry["scale"]
-        derived = round(raw_width / DESIGN_WIDTH) if raw_width else 0
-        derived = derived if 1 <= derived <= 4 and raw_width % DESIGN_WIDTH == 0 else 0
-        if derived and derived != scale and entry["explicit"]:
-            notes.append("文件名写着 %dx，实际宽度 %dpx，按 %dx 处理" % (scale, raw_width, derived))
-        if derived:
-            scale = derived
-        elif raw_width % DESIGN_WIDTH:
-            notes.append("宽度 %d 不是 %d 的整数倍" % (raw_width, DESIGN_WIDTH))
-        height = max(1, round(raw_height / scale))
-        attrs += ['width="%d"' % DESIGN_WIDTH, 'height="%d"' % height]
-    else:
-        notes.append("读不出尺寸，请手动给这页加 data-h")
+    sources = [
+        '<source type="%s" srcset="%s" sizes="%s" />'
+        % (MIME[ext], ladder_srcset(ladder), SIZES_ATTR)
+        for ext, ladder in entry["ladders"]
+    ]
 
-    lower = [entry["variants"][s] for s in sorted(entry["variants"]) if s < entry["scale"]]
-    if lower and size:
-        candidates = []
-        for scale in sorted(entry["variants"]):
-            name = entry["variants"][scale]
-            candidates.append("assets/%s %dw" % (name, DESIGN_WIDTH * scale))
-        attrs.append('srcset="' + ", ".join(candidates) + '"')
-        attrs.append('sizes="(max-width: %dpx) 100vw, %dpx"' % (DESIGN_WIDTH, DESIGN_WIDTH))
+    fallback = None
+    for ext, ladder in entry["ladders"]:
+        if ext == ".webp":
+            fallback = ladder[max(ladder)]
+    if fallback is None:
+        fallback = top_ladder[top_width]
 
+    attrs = [
+        'class="shot"',
+        'src="assets/%s"' % fallback,
+        'width="%d"' % DESIGN_WIDTH,
+        'height="%d"' % height,
+    ]
     if lazy and not first:
         attrs.append('loading="lazy"')
     elif first:
@@ -208,8 +237,16 @@ def slide_html(entry, first, lazy, hotspots):
     attrs.append('decoding="async"')
     attrs.append('alt=""')
 
-    lines = ['        <section class="slide">']
-    lines.append("          <img " + " ".join(attrs) + " />")
+    opening = '        <section class="slide"'
+    lqip = lqip_data(entry["base"])
+    if lqip:
+        opening += ' style="background-image:url(\'%s\')"' % lqip
+    opening += ">"
+
+    lines = [opening, "          <picture>"]
+    lines += ["            " + source for source in sources]
+    lines.append("            <img " + " ".join(attrs) + " />")
+    lines.append("          </picture>")
     for spot in hotspots_for(entry, hotspots):
         lines.append(
             '          <a class="hotspot" href="%s" style="left:%dpx; top:%dpx; width:%dpx; height:%dpx"></a>'
@@ -219,10 +256,26 @@ def slide_html(entry, first, lazy, hotspots):
     return "\n".join(lines), height, bytes_, notes
 
 
+def preload_html(entry):
+    ext, ladder = entry["ladders"][0]
+    return (
+        '      <link rel="preload" as="image" type="%s" imagesrcset="%s" imagesizes="%s" />'
+        % (MIME[ext], ladder_srcset(ladder), SIZES_ATTR)
+    )
+
+
 def human(number):
     if number >= 1048576:
         return "%.1f MB" % (number / 1048576)
     return "%.0f KB" % (number / 1024)
+
+
+def replace_block(page, begin, end, body):
+    if begin not in page or end not in page:
+        return page
+    head, rest = page.split(begin, 1)
+    _, tail = rest.split(end, 1)
+    return head + begin + body + end + tail
 
 
 def main():
@@ -242,27 +295,28 @@ def main():
     for position, entry in enumerate(entries):
         html, height, bytes_, notes = slide_html(entry, position == 0, lazy, hotspots)
         blocks.append(html)
-        rows.append((entry["src"], height, bytes_, notes))
+        top_width = max(entry["ladders"][0][1])
+        rows.append((entry["base"], top_width, height, bytes_, notes))
         total += bytes_
         if bytes_ > WARN_SLIDE_BYTES:
-            warns.append("%s 单张 %s，偏大" % (entry["src"], human(bytes_)))
+            warns.append("%s 最高档 %s，偏大" % (entry["base"], human(bytes_)))
         if height > WARN_HEIGHT:
-            warns.append("%s 高度 %d px，iOS 上可能渲染异常，建议再切一刀" % (entry["src"], height))
+            warns.append("%s 高度 %d px，iOS 上可能渲染异常，建议再切一刀" % (entry["base"], height))
         for note in notes:
-            warns.append("%s：%s" % (entry["src"], note))
+            warns.append("%s：%s" % (entry["base"], note))
     if total > WARN_TOTAL_BYTES:
-        warns.append("整站图片合计 %s，手机流量下打开会慢" % human(total))
+        warns.append("最高档图片合计 %s，4K 屏用户会有点慢" % human(total))
 
-    head, rest = page.split(BEGIN, 1)
-    _, tail = rest.split(END, 1)
-    page = head + BEGIN + "\n" + "\n".join(blocks) + "\n        " + END + tail
+    page = replace_block(page, BEGIN, END, "\n" + "\n".join(blocks) + "\n        ")
+    if entries:
+        page = replace_block(page, PRELOAD_BEGIN, PRELOAD_END, "\n" + preload_html(entries[0]) + "\n      ")
     with open(TARGET, "w", encoding="utf-8") as handle:
         handle.write(page)
 
-    width = max(len(row[0]) for row in rows)
-    for name, height, bytes_, _ in rows:
-        print("%-*s  高 %5d  %8s" % (width, name, height, human(bytes_)))
-    print("\n共 %d 页，合计 %s，已写入 %s" % (len(rows), human(total), os.path.relpath(TARGET, ROOT)))
+    for base, top_width, height, bytes_, _ in rows:
+        print("%-6s 高 %5d  最高档 %5dpx %8s" % (base, height, top_width, human(bytes_)))
+    print("\n共 %d 页，最高档合计 %s，已写入 %s"
+          % (len(rows), human(total), os.path.relpath(TARGET, ROOT)))
     if warns:
         print("\n注意：")
         for line in warns:
